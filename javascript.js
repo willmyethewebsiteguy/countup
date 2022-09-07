@@ -13,6 +13,7 @@
   const utils = {
     /* Emit a custom event */
     endsWithNumber: function ( str ){
+      str = str.trim();
       return isNaN(str.slice(-1)) ? str.slice(-1) : '';
     },
     isScaledText: function (el) {
