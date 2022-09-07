@@ -5,7 +5,8 @@
 (function(){  
   const ps = {
     cssId: 'wm-countup-animation',
-    uniqueId: 1
+    uniqueId: 1,
+    domains: []
   };
   const defaults = {
   };
@@ -20,6 +21,14 @@
         answer = el.closest('.sqs-block');
       }
       return answer;
+    },
+    allowedURL: function() {
+      let origin = window.location.origin;
+      if (!ps.domains.length) return true;
+      for (let domain of ps.domains) {
+        if (origin.includes(domain)) return true;
+      }
+      return false;
     },
     emitEvent: function (type, detail = {}, elem = document) {
       // Make sure there's an event type
@@ -117,6 +126,21 @@
       let block = null;
       if (utils.isScaledText(el)) {
         block = utils.isScaledText(el);
+        utils.isScaledText(el).classList.add('has-countup-animation');
+        let styles = `<style>
+.has-countup-animation .preSlide {
+  transform: translate(0,0) !important;
+  opacity: 1 !important;
+}
+</style>`;
+        document.head.insertAdjacentHTML('afterbegin', styles);
+        el.style.opacity = '0';
+        let str = '0';
+        let count = instance.settings.el.innerText.length;
+        for (let i = 1; i < count; i++) {
+          str += '0'
+        }
+        el.dataset['startingNumber'] = str;
       }
 
       let countTo = parseInt( instance.settings.el.innerText.replace(/,/g, '')),
@@ -133,6 +157,7 @@
       let ease = x => Math.sin((x * Math.PI) / 2);
 
       let animateCountUp = el => {
+        el.style.opacity = '';
         let counter = setInterval( () => {
           frame++;
 
@@ -216,7 +241,7 @@
                          data-unique-id="${id}"
                          ${customColor ? `style="${customColor.style.cssText}" class="${customColor.classList.value}" ` : ''}>
                              ${el.innerHTML}
-                         </span>`;
+                   </span>`;
           
       el.insertAdjacentHTML('afterend', newEl);
       el.remove();
@@ -248,14 +273,22 @@
   }());
   
   let countupsFromCode = document.querySelectorAll('[data-wm-plugin="countup"]');
-  let countupsFromAnchors = document.querySelectorAll('a[href="#wm-countup"]');
+  let countupsFromAnchors = document.querySelectorAll('a[href="#wm-countup"], a[href="#wmcountup"]'),
+      origin = window.location.origin;
+
+  const contains = ps.domains.some(domain => {
+    if (origin.includes(domain)) {  return true; }
+    return false;
+  });
 
   for (let el of countupsFromCode) {
     if (el.classList.contains('loaded')) return;
     new CountUpAnimation(el)
   }
-  for (let el of countupsFromAnchors) {
+  for (let el of countupsFromAnchors) {    
+    if (!utils.allowedURL()) return;
     if (el.classList.contains('loaded')) return;
+    
     new BuildCountUp(el)
   }
 }());
