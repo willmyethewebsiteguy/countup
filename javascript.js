@@ -6,7 +6,6 @@
   const ps = {
     cssId: 'wm-countup-animation',
     uniqueId: 1,
-    domains: []
   };
   const defaults = {
   };
@@ -22,14 +21,6 @@
         answer = el.closest('.sqs-block');
       }
       return answer;
-    },
-    allowedURL: function() {
-      let origin = window.location.origin;
-      if (!ps.domains.length) return true;
-      for (let domain of ps.domains) {
-        if (origin.includes(domain)) return true;
-      }
-      return false;
     },
     emitEvent: function (type, detail = {}, elem = document) {
       // Make sure there's an event type
@@ -145,8 +136,12 @@
       }
 
       let countTo = parseInt( instance.settings.el.innerText.replace(/,/g, '')),
-          duration = instance.settings.duration;
-      instance.settings.el.innerHTML = instance.settings.startingNumber;
+          duration = instance.settings.duration,
+          start = parseInt(instance.settings.startingNumber) || 0;
+      
+      console.log(start)
+      
+      instance.settings.el.innerHTML = start;
 
       // Frames
       let frame = 0,
@@ -166,7 +161,7 @@
           let easingProgress = ease( frame / totalFrames );
 
           // Use the easing progress to get actual count
-          let currentCount = Math.round( countTo * easingProgress );
+          let currentCount = Math.round(((countTo - start) * easingProgress ) + start);
           
           if (locale) currentCount = currentCount.toLocaleString("en-US");
           
@@ -212,7 +207,7 @@
           return el.dataset['fpx'] || utils.getPropertyValue(this.el, '--fps') || 60;
         },
         get startingNumber() {
-          return el.dataset['startingNumber'] || utils.getPropertyValue(this.el, '--starting-number') || 0;
+          return el.dataset['start'] || utils.getPropertyValue(this.el, '--start') || 0;
         }
       };
 
@@ -240,6 +235,7 @@
           customColor = el.querySelector('span[class*="sqsrte-text-color"]'),
           newEl = `<span data-wm-plugin="countup" 
                          data-unique-id="${id}"
+                         data-start=${instance.settings.startingNumber}
                          ${customColor ? `style="${customColor.style.cssText}" class="${customColor.classList.value}" ` : ''}>
                              ${el.innerHTML}
                    </span>`;
@@ -257,10 +253,16 @@
       this.settings = {
         el: el,
         get duration() {
-          return el.dataset['duration'] || 3000
+          return el.dataset['duration'] || 3000;
         }, 
         get index() {
           return Array.from( el.parentElement.children).indexOf(el);
+        },
+        get startingNumber() {
+          let num = parseInt(el.href.split('-')[el.href.split('-').length - 1])
+          if (!num) num = 0;
+          console.log(num)
+          return num
         }
       };
 
@@ -274,20 +276,14 @@
   }());
   
   let countupsFromCode = document.querySelectorAll('[data-wm-plugin="countup"]');
-  let countupsFromAnchors = document.querySelectorAll('a[href="#wm-countup"], a[href="#wmcountup"]'),
+  let countupsFromAnchors = document.querySelectorAll('a[href*="#wm-countup"], a[href*="#wmcountup"]'),
       origin = window.location.origin;
-
-  const contains = ps.domains.some(domain => {
-    if (origin.includes(domain)) {  return true; }
-    return false;
-  });
 
   for (let el of countupsFromCode) {
     if (el.classList.contains('loaded')) return;
     new CountUpAnimation(el)
   }
   for (let el of countupsFromAnchors) {    
-    if (!utils.allowedURL()) return;
     if (el.classList.contains('loaded')) return;
     
     new BuildCountUp(el)
