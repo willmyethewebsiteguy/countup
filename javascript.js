@@ -266,7 +266,6 @@
         get startingNumber() {
           let num = parseInt(el.href.split('-')[el.href.split('-').length - 1])
           if (!num) num = 0;
-          console.log(num)
           return num
         }
       };
