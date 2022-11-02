@@ -135,12 +135,16 @@
         el.dataset['startingNumber'] = str;
       }
 
-      let countTo = parseInt( instance.settings.el.innerText.replace(/,/g, '')),
+      let countTo = parseFloat( instance.settings.el.innerText.replace(/,/g, '')),
           duration = instance.settings.duration,
-          start = parseInt(instance.settings.startingNumber) || 0;
-      
-      console.log(start)
-      
+          start = parseInt(instance.settings.startingNumber) || 0,
+          decimals = getDecimals(countTo);
+
+      function getDecimals(num) {
+        if(Math.floor(num) === num) return 0;
+        return num.toString().split(".")[1].length || 0; 
+      };
+
       instance.settings.el.innerHTML = start;
 
       // Frames
@@ -161,8 +165,9 @@
           let easingProgress = ease( frame / totalFrames );
 
           // Use the easing progress to get actual count
-          let currentCount = Math.round(((countTo - start) * easingProgress ) + start);
-          
+          //let currentCount = Math.round(((countTo - start) * easingProgress ) + start);
+          let currentCount = parseFloat(((countTo - start) * easingProgress ) + start).toFixed(decimals);
+
           if (locale) currentCount = currentCount.toLocaleString("en-US");
           
           //If Scaled Text, Re=initialize
