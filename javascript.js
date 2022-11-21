@@ -168,7 +168,9 @@
           //let currentCount = Math.round(((countTo - start) * easingProgress ) + start);
           let currentCount = parseFloat(((countTo - start) * easingProgress ) + start).toFixed(decimals);
 
-          if (locale) currentCount = currentCount.toLocaleString("en-US");
+          if (locale) {
+            currentCount = parseInt(currentCount).toLocaleString("en-US");
+          }
           
           //If Scaled Text, Re=initialize
           if (block) { Squarespace?.initializeScaledText(block) }
