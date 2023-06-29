@@ -135,8 +135,8 @@
         el.dataset['startingNumber'] = str;
       }
 
-      let countTo = parseFloat( instance.settings.el.innerText.replace(/,/g, '')),
-          duration = instance.settings.duration,
+      let countTo = parseFloat( instance.settings.el.innerText.replace(/,/g, ''));
+      let duration = instance.settings.duration,
           start = parseInt(instance.settings.startingNumber) || 0,
           decimals = getDecimals(countTo);
 
@@ -208,7 +208,7 @@
       this.settings = {
         el: el,
         get duration() {
-          return el.dataset['duration'] || utils.getPropertyValue(this.el, '--speed') || 3000;
+          return el.dataset['speed'] || el.dataset['duration'] || utils.getPropertyValue(this.el, '--speed') || 3000;
         }, 
         get fps() {
           return el.dataset['fpx'] || utils.getPropertyValue(this.el, '--fps') || 60;
@@ -220,7 +220,6 @@
 
       //Get Settings
       buildAnimation(this)
-      
 
       el.wmCountupAnimation = {
         initilized: true,
@@ -242,6 +241,7 @@
           customColor = el.querySelector('span[class*="sqsrte-text-color"]'),
           newEl = `<span data-wm-plugin="countup" 
                          data-unique-id="${id}"
+                         data-speed="${instance.settings.speed}"
                          data-start=${instance.settings.startingNumber}
                          ${customColor ? `style="${customColor.style.cssText}" class="${customColor.classList.value}" ` : ''}>
                              ${el.innerHTML}
@@ -252,6 +252,21 @@
       ps.uniqueId++;
       return document.querySelector(`[data-wm-plugin="countup"][data-unique-id="${id}"]`);
     }
+
+    function parseURL(instance, url) {
+      const params = new URLSearchParams(url.slice(url.indexOf("?") + 1));
+      let start = params.get("start");
+      let speed = params.get("speed");
+
+      var defaultStart = 0; // Default value for start parameter
+      var defaultSpeed = 3000; // Default value for speed parameter
+
+      start = start ? parseInt(start) : defaultStart;
+      speed = speed ? parseInt(speed) : defaultSpeed;
+
+      instance.settings.speed = speed
+      instance.settings.startingNumber = start;
+    }
     
     function Constructor(el, options = {}) {
       let instance = this;
@@ -259,18 +274,11 @@
       // Add Elements Obj
       this.settings = {
         el: el,
-        get duration() {
-          return el.dataset['duration'] || 3000;
-        }, 
         get index() {
           return Array.from( el.parentElement.children).indexOf(el);
-        },
-        get startingNumber() {
-          let num = parseInt(el.href.split('-')[el.href.split('-').length - 1])
-          if (!num) num = 0;
-          return num
         }
       };
+      parseURL(instance, el.getAttribute('href'))
 
       this.settings.el = replaceAnchor(this);
       
@@ -286,12 +294,21 @@
       origin = window.location.origin;
 
   for (let el of countupsFromCode) {
-    if (el.classList.contains('loaded')) return;
-    new CountUpAnimation(el)
+    try {
+      if (el.classList.contains('loaded')) return;
+      new CountUpAnimation(el)
+    } catch (err) {
+      console.log('error with', el);
+      console.log(err);
+    }
   }
   for (let el of countupsFromAnchors) {    
-    if (el.classList.contains('loaded')) return;
-    
-    new BuildCountUp(el)
+    try {
+      if (el.classList.contains('loaded')) return;
+      new BuildCountUp(el)
+    } catch (err) {
+      console.log('error with', el);
+      console.log(err);
+    }
   }
 }());
