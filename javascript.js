@@ -111,8 +111,8 @@
 
     function buildAnimation(instance) {
       let el = instance.settings.el,
-          suffix = utils.endsWithNumber(el.innerText),
-          locale = instance.settings.el.innerText.includes(",");
+        suffix = utils.endsWithNumber(el.innerText),
+        localeString = instance.settings.localeString.replaceAll("'", '').replaceAll('"', '');
 
       //Is Scaled Text
       let block = null;
@@ -135,14 +135,52 @@
         el.dataset['startingNumber'] = str;
       }
 
-      let countTo = parseFloat( instance.settings.el.innerText.replace(/,/g, ''));
-      let duration = instance.settings.duration,
-          start = parseInt(instance.settings.startingNumber) || 0,
-          decimals = getDecimals(countTo);
+      let countTo = convertToNumber(instance.settings.el.innerText),
+        duration = instance.settings.duration,
+        start = instance.settings.startingNumber ? convertToNumber(instance.settings.startingNumber) : 0,
+        decimals = getDecimals(instance.settings.el.innerText);
 
-      function getDecimals(num) {
-        if(Math.floor(num) === num) return 0;
-        return num.toString().split(".")[1].length || 0; 
+      function convertToNumber(str) {
+        function escapeRegExp(str) {
+          return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+      
+        str = str.trim();
+        const thousandsSeparator = getThousandsSeparator();
+        const escapedSeparator = escapeRegExp(thousandsSeparator);
+      
+        // Create a regular expression to match either a dot or a comma as a decimal separator
+        const decimalRegExp = /[.,]/;
+        const separatorRegExp = new RegExp(escapedSeparator, 'g');
+        
+        // Replace thousands separator with an empty string
+        const stringWithoutCommas = str.replace(separatorRegExp, '');
+      
+        // Replace the first occurrence of a decimal separator with a dot ('.') to ensure it's a valid number
+        const stringWithDotAsDecimalPoint = stringWithoutCommas.replace(decimalRegExp, '.');
+      
+        // Parse the modified string to a float
+        const num = parseFloat(stringWithDotAsDecimalPoint);
+      
+        //console.log('num:', num);
+        return num;
+      }
+      function getDecimalSeparator() {
+        // Format a number with the current locale to get the separator
+        const formattedNumber = (1.1).toLocaleString(localeString);
+        return formattedNumber.charAt(1);
+      }
+      function getThousandsSeparator() {
+        // Format a large number with the current locale to get the separator
+        const formattedNumber = (1000).toLocaleString(localeString);
+        return formattedNumber.charAt(1);
+      }
+      function getDecimals(numStr) {
+        let separator = getDecimalSeparator();
+        let decimals = 0;
+        let splitAtSeparator = numStr.split(separator)[1];
+        if (splitAtSeparator) decimals = splitAtSeparator.trim().length;
+        return decimals
       };
 
       instance.settings.el.innerHTML = start;
@@ -165,11 +203,13 @@
           let easingProgress = ease( frame / totalFrames );
 
           // Use the easing progress to get actual count
-          //let currentCount = Math.round(((countTo - start) * easingProgress ) + start);
           let currentCount = parseFloat(((countTo - start) * easingProgress ) + start).toFixed(decimals);
 
-          if (locale) {
-            currentCount = parseInt(currentCount).toLocaleString("en-US");
+          if (localeString) {
+            currentCount = Number(parseFloat(currentCount).toFixed(2)).toLocaleString(localeString, {
+              minimumFractionDigits: decimals,
+              maximumFractionDigits: decimals,
+            })
           }
           
           //If Scaled Text, Re=initialize
@@ -215,6 +255,9 @@
         },
         get startingNumber() {
           return el.dataset['start'] || utils.getPropertyValue(this.el, '--start') || 0;
+        },
+        get localeString() {
+          return el.dataset['locale'] || utils.getPropertyValue(this.el, '--locale-string') || "en-US";
         }
       };
 
@@ -291,7 +334,7 @@
   
   let countupsFromCode = document.querySelectorAll('[data-wm-plugin="countup"]');
   let countupsFromAnchors = document.querySelectorAll('a[href*="#wm-countup"], a[href*="#wmcountup"]'),
-      origin = window.location.origin;
+  origin = window.location.origin;
 
   for (let el of countupsFromCode) {
     try {
