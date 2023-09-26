@@ -138,6 +138,7 @@
       let countTo = convertToNumber(instance.settings.el.innerText),
         duration = instance.settings.duration,
         start = instance.settings.startingNumber ? convertToNumber(instance.settings.startingNumber) : 0,
+        hasSeperator = instance.settings.hasSeperator,
         decimals = getDecimals(instance.settings.el.innerText);
 
       function convertToNumber(str) {
@@ -205,7 +206,7 @@
           // Use the easing progress to get actual count
           let currentCount = parseFloat(((countTo - start) * easingProgress ) + start).toFixed(decimals);
 
-          if (localeString) {
+          if (localeString && hasSeperator) {
             currentCount = Number(parseFloat(currentCount).toFixed(2)).toLocaleString(localeString, {
               minimumFractionDigits: decimals,
               maximumFractionDigits: decimals,
@@ -255,6 +256,10 @@
         },
         get startingNumber() {
           return el.dataset['start'] || utils.getPropertyValue(this.el, '--start') || 0;
+        },
+        get hasSeperator() {
+          const numberString = el.innerText.toString();
+          return numberString.includes('.') || numberString.includes(',');
         },
         get localeString() {
           return el.dataset['locale'] || utils.getPropertyValue(this.el, '--locale-string') || "en-US";
