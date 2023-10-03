@@ -176,11 +176,15 @@
         const formattedNumber = (1000).toLocaleString(localeString);
         return formattedNumber.charAt(1);
       }
+      function countInitialNumbers(s) {
+        const match = s.match(/^\d+/);
+        return match ? match[0].length : 0;
+      }
       function getDecimals(numStr) {
         let separator = getDecimalSeparator();
         let decimals = 0;
         let splitAtSeparator = numStr.split(separator)[1];
-        if (splitAtSeparator) decimals = splitAtSeparator.trim().length;
+        if (splitAtSeparator) decimals = countInitialNumbers(splitAtSeparator.trim())
         return decimals
       };
 
