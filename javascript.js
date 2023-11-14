@@ -124,6 +124,11 @@
   transform: translate(0,0) !important;
   opacity: 1 !important;
 }
+body:not(.sqs-edit-mode-active) .has-countup-animation .sqs-block-content {
+  position:absolute;
+  height: 100% !important;
+  width: 100% !important;
+}
 </style>`;
         document.head.insertAdjacentHTML('afterbegin', styles);
         el.style.opacity = '0';
