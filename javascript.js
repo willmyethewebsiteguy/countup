@@ -119,18 +119,13 @@
       if (utils.isScaledText(el)) {
         block = utils.isScaledText(el);
         utils.isScaledText(el).classList.add('has-countup-animation');
-        let styles = `<style>
-.has-countup-animation .preSlide {
+        let styles = document.createElement('style');
+        styles.textContent = `
+.has-countup-animation .preSlide,
+.has-countup-animation .preFlex{
   transform: translate(0,0) !important;
   opacity: 1 !important;
-}
-body:not(.sqs-edit-mode-active) .has-countup-animation .sqs-block-content {
-  position:absolute;
-  height: 100% !important;
-  width: 100% !important;
-}
-</style>`;
-        document.head.insertAdjacentHTML('afterbegin', styles);
+}`;
         el.style.opacity = '0';
         let str = '0';
         let count = instance.settings.el.innerText.length;
@@ -138,6 +133,21 @@ body:not(.sqs-edit-mode-active) .has-countup-animation .sqs-block-content {
           str += '0'
         }
         el.dataset['startingNumber'] = str;
+        let scaledTextEl = block.querySelector('.sqsrte-scaled-text-container');
+        let hasPrevElementSibling = scaledTextEl.previousElementSibling != null;
+        let hasNextElementSibling = scaledTextEl.nextElementSibling != null;
+        if (!hasNextElementSibling && !hasPrevElementSibling) {
+          let id = block.id;
+          if (id) {
+            styles.textContent +=`
+body:not(.sqs-edit-mode-active) .fluid-engine #${id}.has-countup-animation .sqs-block-content {
+  position: absolute;
+  height: 100% !important;
+  width: 100% !important;
+}`
+          }
+        }
+        document.head.append(styles);
       }
 
       let countTo = convertToNumber(instance.settings.el.innerText),
