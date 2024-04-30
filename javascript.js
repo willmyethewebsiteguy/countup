@@ -144,7 +144,7 @@ body:not(.sqs-edit-mode-active) .fluid-engine #${id}.has-countup-animation .sqs-
   position: absolute;
   height: 100% !important;
   width: 100% !important;
-}`
+}`;
           }
         }
         document.head.append(styles);
@@ -226,13 +226,13 @@ body:not(.sqs-edit-mode-active) .fluid-engine #${id}.has-countup-animation .sqs-
           let currentCount = parseFloat(((countTo - start) * easingProgress ) + start).toFixed(decimals);
 
           if (localeString && hasSeperator) {
-            currentCount = Number(parseFloat(currentCount).toFixed(2)).toLocaleString(localeString, {
+            currentCount = Number(parseFloat(currentCount).toFixed(decimals)).toLocaleString(localeString, {
               minimumFractionDigits: decimals,
               maximumFractionDigits: decimals,
             })
           }
           
-          //If Scaled Text, Re=initialize
+          //If Scaled Text, Re-initialize
           if (block) { Squarespace?.initializeScaledText(block) }
  
           // Change Element if not same -- account for rounding issues
